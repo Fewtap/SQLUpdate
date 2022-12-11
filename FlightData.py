@@ -56,4 +56,8 @@ class Flight:
 
 
 
-        
+def find_rooms_by_hash(cursor, hash):
+    sql = "SELECT * FROM Rooms WHERE FlightHash = %s"
+    cursor.execute(sql, (hash,))
+    results = cursor.fetchall()
+    return results       
