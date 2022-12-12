@@ -40,7 +40,7 @@ def receive_data():
     # Create a cursor object to execute SQL queries
     cursor = mydb.cursor()
 
-    cursor.execute("USE Departures")
+    
 
     # Iterate through the items in the dictionary and insert them into the SQL table
     for item in json_data:
