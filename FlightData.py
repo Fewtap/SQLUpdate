@@ -1,7 +1,7 @@
 import mysql.connector
 
 class Flight:
-    def __init__(self, Rute, DepartureAirport, ArrivalAirport, Planned, Estimated, FlightHash, ArrivalICAO, DepartureICAO, DeparturingRooms, Status_kl, Status_en, Status_da):
+    def __init__(self, Rute, DepartureAirport, ArrivalAirport, Planned, Estimated, FlightHash, ArrivalICAO, DepartureICAO, Status_kl, Status_en, Status_da):
         self.Rute = Rute
         self.DepartureAirport = DepartureAirport
         self.ArrivalAirport = ArrivalAirport
@@ -25,7 +25,7 @@ class Flight:
         # If the flight already exists, update the existing row
         if result:
             with db.cursor() as cursor:
-                sql = "UPDATE Flights SET Rute = %s, DepartureAirport = %s, ArrivalAirport = %s, Planned = %s, Estimated = %s, FlightHash = %s, ArrivalICAO = %s, DepartureICAO = %s, DeparturingRooms = %s, Status_kl = %s, Status_en = %s, Status_da = %s WHERE FlightHash = %s"
+                sql = "UPDATE Flights SET Rute = %s, DepartureAirport = %s, ArrivalAirport = %s, Planned = %s, Estimated = %s, FlightHash = %s, ArrivalICAO = %s, DepartureICAO = %s, Status_kl = %s, Status_en = %s, Status_da = %s WHERE FlightHash = %s"
                 values = (
                     self.Rute,
                     self.DepartureAirport,
@@ -35,7 +35,6 @@ class Flight:
                     self.FlightHash,
                     self.ArrivalICAO,
                     self.DepartureICAO,
-                    self.DeparturingRooms,
                     self.Status_kl,
                     self.Status_en,
                     self.Status_da,
@@ -46,8 +45,8 @@ class Flight:
         else:
             # If the flight doesn't exist, insert a new row
             with db.cursor() as cursor:
-                    sql = "INSERT INTO Flights (Rute, DepartureAirport, ArrivalAirport, Planned, Estimated, FlightHash, ArrivalICAO, DepartureICAO, DeparturingRooms, Status_kl, Status_en, Status_da) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                    val = (self.rute, self.departureAirport, self.arrivalAirport, self.planned, self.estimated, self.flightHash, self.arrivalICAO, self.departureICAO, self.departuringRooms, self.status_kl, self.status_en, self.status_da)
+                    sql = "INSERT INTO Flights (Rute, DepartureAirport, ArrivalAirport, Planned, Estimated, FlightHash, ArrivalICAO, DepartureICAO, Status_kl, Status_en, Status_da) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                    val = (self.rute, self.departureAirport, self.arrivalAirport, self.planned, self.estimated, self.flightHash, self.arrivalICAO, self.departureICAO, self.status_kl, self.status_en, self.status_da)
                     cursor.execute(sql, val)
             
             print("Row inserted")
@@ -56,8 +55,3 @@ class Flight:
 
 
 
-def find_rooms_by_hash(cursor, hash):
-    sql = "SELECT * FROM Rooms WHERE FlightHash = %s"
-    cursor.execute(sql, (hash,))
-    results = cursor.fetchall()
-    return results       
