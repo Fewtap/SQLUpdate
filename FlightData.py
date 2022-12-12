@@ -46,7 +46,7 @@ class Flight:
             # If the flight doesn't exist, insert a new row
             with db.cursor() as cursor:
                     sql = "INSERT INTO Flights (Rute, DepartureAirport, ArrivalAirport, Planned, Estimated, FlightHash, ArrivalICAO, DepartureICAO, Status_kl, Status_en, Status_da) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                    val = (self.rute, self.departureAirport, self.arrivalAirport, self.planned, self.estimated, self.flightHash, self.arrivalICAO, self.departureICAO, self.status_kl, self.status_en, self.status_da)
+                    val = (self.Rute, self.departureAirport, self.arrivalAirport, self.planned, self.estimated, self.flightHash, self.arrivalICAO, self.departureICAO, self.status_kl, self.status_en, self.status_da)
                     cursor.execute(sql, val)
             
             print("Row inserted")
