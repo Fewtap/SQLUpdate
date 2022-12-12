@@ -3,6 +3,7 @@ from flask import Flask, request
 from datetime import datetime
 import json
 import mysql.connector
+import itertools
 
 class create_dict(dict): 
   
@@ -13,6 +14,12 @@ class create_dict(dict):
     # Function to add key:value 
     def add(self, key, value): 
         self[key] = value
+
+def dictfetchall(cursor):
+    """Returns all rows from a cursor as a list of dicts"""
+    desc = cursor.description
+    return [dict(zip([col[0] for col in desc], row)) 
+            for row in cursor.fetchall()]
 
 mydb = mysql.connector.connect(
   host="lin-13041-7784-mysql-primary.servers.linodedb.net",
@@ -25,11 +32,32 @@ app = Flask(__name__)
 
 @app.route("/api/data", methods=["POST"])
 def receive_data():
-    # Get the JSON data from the request
-    data = request.get_json()
+    json_data = json.loads(request.data)
 
-    # Print the data
-    print(data)
+    # Connect to the MySQL database
+    
+
+    # Create a cursor object to execute SQL queries
+    cursor = mydb.cursor()
+
+    cursor.execute("USE Departures")
+
+    # Iterate through the items in the dictionary and insert them into the SQL table
+    for item in json_data:
+        query = "INSERT INTO Rooms (RoomNumber, FlightHash) VALUES (%s, %s)"
+        cursor.execute(query, (item['RoomNumber'], item['FlightHash']))
+
+    # Commit the changes to the database
+    mydb.commit()
+
+    # Close the cursor and connection
+    cursor.close()
+    mydb.close()
+
+    for room in json_data:
+        print(room["FlightHash"])
+        print(room["RoomNumber"])
+        print()
 
     return "Data received", 200
 
@@ -48,39 +76,45 @@ def flights():
     date = datetime.strptime(date, r"%d/%m/%Y")
 
     # Query the database for all flights on the given date
-    with mydb.cursor() as cursor:
-        sql = "SELECT * FROM Flights WHERE DATE(Planned) = %s"
-        cursor.execute(sql, (date,))  # Note the extra comma here
-        result = cursor.fetchall()
-   
-    mydict = create_dict()
-    keys = []
-    for i,row in enumerate(result):
-        planned = row[3]
-        planned.strftime("%m/%d/%Y %H:%M:%S")
-        estimated = None
-        if row is not None:
-            estimated = row[4]
-            estimated = estimated.strftime("%m/%d/%Y %H:%M:%S")
-        mydict.add(str(i),(({
-            "Rute":row[0],
-            "DepartureAirport": row[1],
-            "ArrivalAirport": row[2],
-            "Planned": str(planned),
-            #Might be a problem but we'll take a look at it
-            "Estimated": str(estimated),
-            "Status_kl": row[5],
-            "Status_en": row[6],
-            "Status_da": row[7],
-            "FlightHash": row[8],
-            "ArrivalICAO": row[9],
-            "DepartureICAO":row[10]
-        })))
+    result = []
+    while True:
+        with mydb.cursor() as cursor:
+            sql = "SELECT * FROM Flights WHERE DATE(Planned) = %s"
+            cursor.execute(sql, (date,))  # Note the extra comma here
+            rows = dictfetchall(cursor)
 
-        for i,x in enumerate(row):
-            print(str(i) + " " + str(x))
+            # Process the rows
+            for row in rows:
+                # Convert the datetime objects to strings
+                planned = row["Planned"].strftime("%m/%d/%Y %H:%M:%S")
+                estimated = None
+                if row["Estimated"] is not None:
+                    estimated = row["Estimated"].strftime("%m/%d/%Y %H:%M:%S")
+
+                # Update the dictionary with the new values
+                row["Planned"] = planned
+                row["Estimated"] = estimated
+
+                # Append the dictionary to the result list
+                result.append(row)
+
+            # Move to the next result set
+            more_results = cursor.nextset()
+
+            # If there are no more result sets, break out of the loop
+            if not more_results:
+                break
+        for flight in result:
+            planned = flight['Planned']
+            planned = flight["Planned"].strftime("%m/%d/%Y %H:%M:%S")
+            flight['Planned'] = planned
+            estimated = ""
+            if flight['Estimated'] is not None:
+                estimated = flight["Estimated"].strftime("%m/%d/%Y %H:%M:%S")
+                flight["Estimated"] = estimated
     # Format the query result as a JSON string and return it
-    return json.dumps(mydict, indent=2), 200
+    return json.dumps(result, indent=2), 200
+
     
 
 
