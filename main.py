@@ -33,7 +33,6 @@ while True:
             FlightHash = row['FlightHash'],
             ArrivalICAO = row['ArrivalICAO'],
             DepartureICAO = row['DepartureICAO'],
-            DeparturingRooms = None,
             Status_kl = row['Status']['kl'],
             Status_en = row['Status']['en'],
             Status_da = row['Status']['da']
