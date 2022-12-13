@@ -14,6 +14,13 @@ mydb = mysql.connector.connect(
 
 while True:
 
+    mydb = mysql.connector.connect(
+    host="lin-13041-7784-mysql-primary.servers.linodedb.net",
+    user="linroot",
+    passwd="7ZmXl9xm9J@qsBIZ",
+    database="Departures"
+    )
+
     mycursor = mydb.cursor()
 
     url = "https://www.mit.gl/wp-content/themes/mitgl/webservice.php?type=Departures&icao=BGJN"
@@ -39,7 +46,7 @@ while True:
         )
 
         f.save(mydb)
-
+    mydb.close()
     sleep(60)
 
 
